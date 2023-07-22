@@ -16,8 +16,12 @@ async function main() {
 
 async function deployController() {
   const oneInchContract = "0x1111111254EEB25477B68fb85Ed929f73A960582";
+  const allowedStakeTokens = [
+    "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174", //USDC
+    "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619" //WETH
+  ];
   
-  const controller = await hre.ethers.deployContract("StakeGardenController", [oneInchContract]);
+  const controller = await hre.ethers.deployContract("StakeGardenController", [oneInchContract, allowedStakeTokens]);
   await controller.waitForDeployment();
   
   const address = await controller.getAddress();

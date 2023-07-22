@@ -16,8 +16,9 @@ contract StakeGardenController is Ownable {
   // One Inch Address - 0x1111111254EEB25477B68fb85Ed929f73A960582
   address private oneInch;
 
-  constructor(address _oneInch) {
+  constructor(address _oneInch, address[] memory _allowedStakeTokens) {
     oneInch = _oneInch;
+    allowedStakeTokens = _allowedStakeTokens;
   }
 
   function getOneInch() external view returns (address) {
