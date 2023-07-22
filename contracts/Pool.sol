@@ -33,7 +33,7 @@ contract StakeGardenPool is Ownable, IPool, ERC20 {
     if (_stakeTokens.length != _weights.length) {
       revert TokenAndWeightsMismatch();
     }
-    
+
     stakeTokens = _stakeTokens;
     controller = IController(_controller);
     

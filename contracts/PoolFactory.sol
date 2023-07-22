@@ -23,6 +23,7 @@ contract StakeGardenPoolFactory is IPoolFactory {
     string calldata name,
     string calldata symbol
   ) override external returns(IPool) {
+    // @TODO: verify it doesn't always deploy on the same address
     IPool pool = new StakeGardenPool(name, symbol, address(controller), stakeTokens, weights);
     Ownable(address(pool)).transferOwnership(msg.sender);
 

@@ -13,7 +13,7 @@ async function main() {
   const setPoolFactoryTx = await controller.contract.setPoolFactory(factory.address);
   await setPoolFactoryTx.wait();
 
-  createPool(factory.contract);
+  //await createPool(factory.contract);
 }
 
 async function deployController() {
@@ -53,13 +53,28 @@ async function createPool(factory) {
   ];
 
   const weights = [
-    "1",
-    "1"
+    hre.ethers.parseUnits("500", 6),
+    hre.ethers.parseUnits("500", 18)
   ];
 
-  const createPoolTx = await factory.createPool(stakeTokens, weights, "StakeGarden ETH", "sgETH");
-  await createPoolTx.wait();
-  console.log(createPoolTx);
+
+  console.log("Creating pool...");
+  console.log("Factory:", factory);
+  console.log("StakeTokens:", stakeTokens);
+  console.log("Weights:", weights);
+
+  try {
+    const createPoolTx = await factory.createPool(stakeTokens, weights, "StakeGarden ETH", "sgETH");
+    await createPoolTx.wait();
+    console.log("Pool created successfully");
+  } catch (error) {
+    console.error("createPoolTx failed:", error);
+  }
+
+
+  // const poolAddress = await factory.createPool(stakeTokens, weights, "StakeGarden ETH", "sgETH");
+  // console.log(poolAddress);
+
   //const address = await createPoolTx.getAddress();
   //console.log(`Pool deployed at ${address}`);
 
