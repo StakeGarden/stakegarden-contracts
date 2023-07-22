@@ -22,10 +22,11 @@ contract StakeGardenPoolFactory is IPoolFactory {
     uint256[] calldata weights,
     string calldata name,
     string calldata symbol
-  ) override external {
-    // Please note, the weights array is not used in the Pool creation
+  ) override external returns(IPool) {
     IPool pool = new StakeGardenPool(name, symbol, address(controller), stakeTokens, weights);
     Ownable(address(pool)).transferOwnership(msg.sender);
+
     emit PoolCreated(address(pool), name, symbol, address(controller), weights);
+    return pool;
   }
 }

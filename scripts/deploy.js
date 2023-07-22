@@ -10,8 +10,10 @@ async function main() {
   const controller = await deployController();
   const factory = await deployFactory(controller.address);
 
-  const setPoolTX = await controller.contract.setPoolFactory(factory.address);
-  await setPoolTX.wait();
+  const setPoolFactoryTx = await controller.contract.setPoolFactory(factory.address);
+  await setPoolFactoryTx.wait();
+
+  createPool(factory.contract);
 }
 
 async function deployController() {
@@ -37,6 +39,31 @@ async function deployFactory(controllerAddress) {
   console.log(`Factory deployed at ${address}`);
 
   return {address, contract: factory};
+}
+
+async function createPool(factory) {
+  // address[] calldata stakeTokens,
+  //   uint256[] calldata weights,
+  //   string calldata name,
+  //   string calldata symbol
+
+  const stakeTokens = [
+    "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174", //USDC
+    "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619" //WETH
+  ];
+
+  const weights = [
+    "1",
+    "1"
+  ];
+
+  const createPoolTx = await factory.createPool(stakeTokens, weights, "StakeGarden ETH", "sgETH");
+  await createPoolTx.wait();
+  console.log(createPoolTx);
+  //const address = await createPoolTx.getAddress();
+  //console.log(`Pool deployed at ${address}`);
+
+  //return {address, contract:null};
 }
 
 // We recommend this pattern to be able to use async/await everywhere
