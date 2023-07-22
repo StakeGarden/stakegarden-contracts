@@ -13,6 +13,8 @@ async function main() {
   const setPoolFactoryTx = await controller.contract.setPoolFactory(factory.address);
   await setPoolFactoryTx.wait();
 
+  const swapNative = await deploySwapNative(controller.address);
+
   //await createPool(factory.contract);
 }
 
@@ -56,8 +58,7 @@ async function createPool(factory) {
     hre.ethers.parseUnits("500", 6),
     hre.ethers.parseUnits("500", 18)
   ];
-
-
+  
   console.log("Creating pool...");
   console.log("Factory:", factory);
   console.log("StakeTokens:", stakeTokens);
@@ -79,6 +80,15 @@ async function createPool(factory) {
   //console.log(`Pool deployed at ${address}`);
 
   //return {address, contract:null};
+}
+
+async function deploySwapNative(controllerAddress) {
+  const swapNative = await hre.ethers.deployContract("SwapNativeEth", [controllerAddress]);
+  await swapNative.waitForDeployment();
+  
+  const address = await swapNative.getAddress();
+  console.log(`SwapNativeEth deployed at ${address}`);
+  return {address, contract: swapNative};
 }
 
 // We recommend this pattern to be able to use async/await everywhere

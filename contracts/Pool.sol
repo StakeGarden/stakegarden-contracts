@@ -25,16 +25,6 @@ contract StakeGardenPool is Ownable, IPool, ERC20 {
 
   mapping(address => uint256) public weights;
 
-  struct SwapDescription {
-        IERC20 srcToken;
-        IERC20 dstToken;
-        address payable srcReceiver;
-        address payable dstReceiver;
-        uint256 amount;
-        uint256 minReturnAmount;
-        uint256 flags;
-    }
-
   constructor(
     string memory _name, 
     string memory _symbol, 
@@ -49,8 +39,8 @@ contract StakeGardenPool is Ownable, IPool, ERC20 {
     stakeTokens = _stakeTokens;
     controller = IController(_controller);
     
-    uint256 tokenCount = _stakeTokens.length;
-    for (uint256 i = 0; i < tokenCount; i++) {
+    uint256 length = _stakeTokens.length;
+    for (uint256 i = 0; i < length; i++) {
       weights[_stakeTokens[i]] = _weights[i];
       totalWeight += _weights[i];
 
@@ -61,13 +51,13 @@ contract StakeGardenPool is Ownable, IPool, ERC20 {
 
   function deposit(uint256[] memory amounts) external {
     address[] memory _stakeTokens = stakeTokens;
-    uint256 tokenCount = _stakeTokens.length;
-    if (amounts.length != tokenCount) {
+    uint256 length = _stakeTokens.length;
+    if (amounts.length != length) {
       revert AmountCountMismatch();
     }
     
     uint256 poolShare = type(uint256).max;
-    for (uint256 i = 0; i < tokenCount; i++) {
+    for (uint256 i = 0; i < length; i++) {
         uint256 amount = amounts[i];
         if (amount == 0) {
           revert InvalidZeroAmount();
@@ -92,8 +82,8 @@ contract StakeGardenPool is Ownable, IPool, ERC20 {
     _burn(msg.sender, lpAmount);
 
     address[] memory _stakeTokens = stakeTokens;
-    uint256 tokenCount = _stakeTokens.length;
-    for (uint256 i = 0; i < tokenCount; i++) {
+    uint256 length = _stakeTokens.length;
+    for (uint256 i = 0; i < length; i++) {
       uint256 assetAmount = (lpAmount * weights[_stakeTokens[i]]) / 1e18;
       IERC20(_stakeTokens[i]).safeTransfer(msg.sender, assetAmount);
     }
@@ -101,13 +91,13 @@ contract StakeGardenPool is Ownable, IPool, ERC20 {
 
   function _rebalance(uint256[] memory _weights) private {
     address[] memory _stakeTokens = stakeTokens;
-    uint256 tokenCount = _stakeTokens.length;
+    uint256 length = _stakeTokens.length;
 
     if (_stakeTokens.length != _weights.length) {
       revert TokenAndWeightsMismatch();
     }
 
-    for (uint256 i = 0; i < tokenCount; i++) {
+    for (uint256 i = 0; i < length; i++) {
         weights[_stakeTokens[i]] = _weights[i];
     }
   }
@@ -150,9 +140,9 @@ contract StakeGardenPool is Ownable, IPool, ERC20 {
   }
 
   modifier onlyAllowedTokens(address _controller, address[] memory _stakeTokens) {
-    uint256 tokenCount = _stakeTokens.length;
+    uint256 length = _stakeTokens.length;
 
-    for (uint i = 0; i < tokenCount; i++) {
+    for (uint i = 0; i < length; i++) {
       if (!IController(_controller).isTokenValid(_stakeTokens[i])) {
         revert TokenNotSupported();
       }

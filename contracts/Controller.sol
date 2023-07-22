@@ -5,7 +5,7 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 contract StakeGardenController is Ownable {
   // Address of the pool factory
-  address public poolFactory;
+  address private poolFactory;
 
   // List of allowed liquid staking tokens
   address[] private allowedStakeTokens;
@@ -26,11 +26,15 @@ contract StakeGardenController is Ownable {
     oneInch = _oneInch;
   }
 
+  function getPoolFactory() external view returns (address) {
+    return poolFactory;
+  }
+
   // Sets a new address for the pool factory. Can only be called by the contract owner.
   function setPoolFactory(address _poolFactory) external onlyOwner {
     poolFactory = _poolFactory;
   }
-  
+
   // Adds a list of new tokens to the list of allowed staking tokens. Can only be called by the contract owner.
   // _tokens: array of token addresses to be added
   function addAllowedStakeTokens(address[] calldata _tokens) external onlyOwner {
