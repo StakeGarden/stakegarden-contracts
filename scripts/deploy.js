@@ -21,8 +21,8 @@ async function main() {
 async function deployController() {
   const oneInchContract = "0x1111111254EEB25477B68fb85Ed929f73A960582";
   const allowedStakeTokens = [
-    "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174", //USDC
-    "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619" //WETH
+    "0xae7ab96520de3a18e5e111b5eaab095312d7fe84", //stETH
+    "0xae78736cd615f374d3085123a210448e74fc6393" //rETH
   ];
   
   const controller = await hre.ethers.deployContract("StakeGardenController", [oneInchContract, allowedStakeTokens]);

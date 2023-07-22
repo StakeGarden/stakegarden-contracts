@@ -18,6 +18,10 @@ error DexSwapFailed();
 contract StakeGardenPool is Ownable, IPool, ERC20 {
   using SafeERC20 for IERC20;
 
+  event Deposit(uint256[] amounts);
+  event Withdraw(uint256 amount);
+  event Rebalance();
+
   IController public immutable controller;
 
   uint256 public totalWeight;
@@ -63,8 +67,6 @@ contract StakeGardenPool is Ownable, IPool, ERC20 {
           revert InvalidZeroAmount();
         }
 
-        IERC20(_stakeTokens[i]).safeTransferFrom(msg.sender, address(this), amount);
-
         uint256 tokenShare = (amount * 1e18) / weights[_stakeTokens[i]];
         if (tokenShare < poolShare) {
             poolShare = tokenShare;
@@ -72,6 +74,7 @@ contract StakeGardenPool is Ownable, IPool, ERC20 {
     }
 
     _mint(msg.sender, poolShare);
+    emit Deposit(amounts);
   }
 
   function withdraw(uint256 lpAmount) external {
@@ -87,6 +90,7 @@ contract StakeGardenPool is Ownable, IPool, ERC20 {
       uint256 assetAmount = (lpAmount * weights[_stakeTokens[i]]) / 1e18;
       IERC20(_stakeTokens[i]).safeTransfer(msg.sender, assetAmount);
     }
+    emit Withdraw(lpAmount);
   }
 
   function _rebalance(uint256[] memory _weights) private {
@@ -102,12 +106,8 @@ contract StakeGardenPool is Ownable, IPool, ERC20 {
     }
   }
 
-  function swap(bytes calldata data) external onlyOwner {
-    (
-      ,
-      SwapDescription memory desc,
-      ,
-    ) = abi.decode(data[4:], (address, SwapDescription, bytes, bytes));
+  function rebalance(bytes calldata data) external onlyOwner {
+    (,SwapDescription memory desc) = abi.decode(data[4:], (address, SwapDescription));
 
     if (!isStakeToken(address(desc.srcToken)) || !isStakeToken(address(desc.dstToken))) {
       revert TokenNotSupported();
@@ -125,6 +125,7 @@ contract StakeGardenPool is Ownable, IPool, ERC20 {
     // Calculate new weights based on token balances
     weights[address(desc.srcToken)] = sellTokenBalance * totalWeight / (sellTokenBalance + buyTokenBalance);
     weights[address(desc.dstToken)] = totalWeight - weights[address(desc.srcToken)];
+    emit Rebalance();
   }
 
   function isStakeToken(address token) private view returns (bool) {

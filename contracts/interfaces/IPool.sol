@@ -18,5 +18,5 @@ interface IPool {
   
   function withdraw(uint256 lpAmount) external;
   
-  function swap(bytes calldata data) external;
+  function rebalance(bytes calldata data) external;
 }

@@ -12,6 +12,10 @@ module.exports = {
     }
   },
   networks: {
+    ethereum: {
+      url: process.env.ETHEREUM_RPC_URL,
+      accounts: [`0x${process.env.PRIVATE_KEY}`],
+    },
     polygon: {
       url: process.env.POLYGON_RPC_URL,
       accounts: [`0x${process.env.PRIVATE_KEY}`],
