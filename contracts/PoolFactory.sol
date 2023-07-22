@@ -11,6 +11,10 @@ contract StakeGardenPoolFactory is IPoolFactory {
 
   IController public immutable controller;
 
+  // Define the pools array and associated mapping
+  IPool[] public pools;
+  mapping(address => bool) public poolMapping;
+
   event PoolCreated(address poolAddress, string name, string symbol, address controller, uint256[] weights);
 
   constructor(address _controller) {
@@ -27,7 +31,15 @@ contract StakeGardenPoolFactory is IPoolFactory {
     IPool pool = new StakeGardenPool(name, symbol, address(controller), stakeTokens, weights);
     Ownable(address(pool)).transferOwnership(msg.sender);
 
+    // Add the new pool to the pools array and update the mapping
+    pools.push(pool);
+    poolMapping[address(pool)] = true;
+
     emit PoolCreated(address(pool), name, symbol, address(controller), weights);
     return pool;
+  }
+
+  function isPool(address _pool) external view returns (bool) {
+    return poolMapping[_pool];
   }
 }
