@@ -13,15 +13,27 @@ error TokenAndWeightsMismatch();
 error AmountCountMismatch();
 error InvalidZeroAmount();
 error InsufficientBalance();
+error DexSwapFailed();
 
 contract StakeGardenPool is Ownable, IPool, ERC20 {
   using SafeERC20 for IERC20;
 
   IController public immutable controller;
 
+  uint256 public totalWeight;
   address[] public stakeTokens;
 
   mapping(address => uint256) public weights;
+
+  struct SwapDescription {
+        IERC20 srcToken;
+        IERC20 dstToken;
+        address payable srcReceiver;
+        address payable dstReceiver;
+        uint256 amount;
+        uint256 minReturnAmount;
+        uint256 flags;
+    }
 
   constructor(
     string memory _name, 
@@ -40,6 +52,7 @@ contract StakeGardenPool is Ownable, IPool, ERC20 {
     uint256 tokenCount = _stakeTokens.length;
     for (uint256 i = 0; i < tokenCount; i++) {
       weights[_stakeTokens[i]] = _weights[i];
+      totalWeight += _weights[i];
 
       // Approving max for simplicity
       IERC20(_stakeTokens[i]).safeApprove(controller.getOneInch(), type(uint256).max);
@@ -100,10 +113,40 @@ contract StakeGardenPool is Ownable, IPool, ERC20 {
   }
 
   function swap(bytes calldata data) external onlyOwner {
-    // @TODO: decode calldata to get token amounts
-    // @TODO: call _rebalance to update weights
+    (
+      ,
+      SwapDescription memory desc,
+      ,
+    ) = abi.decode(data[4:], (address, SwapDescription, bytes, bytes));
+
+    if (!isStakeToken(address(desc.srcToken)) || !isStakeToken(address(desc.dstToken))) {
+      revert TokenNotSupported();
+    }
+
     (bool success,) = controller.getOneInch().call(data);
-    require(success, "Swap failed");
+    if (!success) {
+      revert DexSwapFailed();
+    }
+
+    // Get current balance of tokens after the swap
+    uint256 sellTokenBalance = desc.srcToken.balanceOf(address(this));
+    uint256 buyTokenBalance = desc.dstToken.balanceOf(address(this));
+
+    // Calculate new weights based on token balances
+    weights[address(desc.srcToken)] = sellTokenBalance * totalWeight / (sellTokenBalance + buyTokenBalance);
+    weights[address(desc.dstToken)] = totalWeight - weights[address(desc.srcToken)];
+  }
+
+  function isStakeToken(address token) private view returns (bool) {
+    uint256 length = stakeTokens.length;
+
+    for (uint256 i = 0; i < length; i++) {
+      if (stakeTokens[i] == token) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   modifier onlyAllowedTokens(address _controller, address[] memory _stakeTokens) {
