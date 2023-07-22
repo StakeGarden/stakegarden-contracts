@@ -7,9 +7,6 @@ contract StakeGardenController is Ownable {
   // Address of the pool factory
   address public poolFactory;
 
-  // Address of the trade module
-  address public tradeModule;
-
   // List of allowed liquid staking tokens
   address[] private allowedStakeTokens;
 
@@ -33,12 +30,7 @@ contract StakeGardenController is Ownable {
   function setPoolFactory(address _poolFactory) external onlyOwner {
     poolFactory = _poolFactory;
   }
-
-  // Sets a new address for the trade module. Can only be called by the contract owner.
-  function setTradeModule(address _tradeModule) external onlyOwner {
-    tradeModule = _tradeModule;
-  }
-
+  
   // Adds a list of new tokens to the list of allowed staking tokens. Can only be called by the contract owner.
   // _tokens: array of token addresses to be added
   function addAllowedStakeTokens(address[] calldata _tokens) external onlyOwner {
