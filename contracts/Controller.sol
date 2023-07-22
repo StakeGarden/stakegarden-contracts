@@ -13,6 +13,21 @@ contract StakeGardenController is Ownable {
   // List of allowed liquid staking tokens
   address[] private allowedStakeTokens;
 
+  // One Inch Address - 0x1111111254EEB25477B68fb85Ed929f73A960582
+  address private oneInch;
+
+  constructor(address _oneInch) {
+    oneInch = _oneInch;
+  }
+
+  function getOneInch() external view returns (address) {
+    return oneInch;
+  }
+
+  function setOneInch(address _oneInch) external onlyOwner {
+    oneInch = _oneInch;
+  }
+
   // Sets a new address for the pool factory. Can only be called by the contract owner.
   function setPoolFactory(address _poolFactory) external onlyOwner {
     poolFactory = _poolFactory;
