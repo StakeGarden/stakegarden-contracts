@@ -5,6 +5,7 @@ import {StakeGardenPool} from "./Pool.sol";
 import {IPool} from "./interfaces/IPool.sol";
 import {IController} from "./interfaces/IController.sol";
 import {IPoolFactory} from "./interfaces/IPoolFactory.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 contract StakeGardenPoolFactory is IPoolFactory {
 
@@ -24,6 +25,7 @@ contract StakeGardenPoolFactory is IPoolFactory {
   ) override external {
     // Please note, the weights array is not used in the Pool creation
     IPool pool = new StakeGardenPool(name, symbol, address(controller), stakeTokens, weights);
+    Ownable(address(pool)).transferOwnership(msg.sender);
     emit PoolCreated(address(pool), name, symbol, address(controller), weights);
   }
 }
