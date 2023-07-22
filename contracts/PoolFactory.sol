@@ -1,13 +1,20 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import {Pool} from "./Pool.sol";
+import {StakeGardenPool} from "./Pool.sol";
 import {IPool} from "./interfaces/IPool.sol";
+import {IController} from "./interfaces/IController.sol";
 import {IPoolFactory} from "./interfaces/IPoolFactory.sol";
 
-contract PoolFactory is IPoolFactory {
+contract StakeGardenPoolFactory is IPoolFactory {
 
-  event PoolCreated(address poolAddress, string name, string symbol, address controller);
+  IController public immutable controller;
+
+  event PoolCreated(address poolAddress, string name, string symbol, address controller, uint256[] weights);
+
+  constructor(address _controller) {
+    controller = IController(_controller);
+  }
 
   function createPool(
     address[] calldata stakeTokens,
@@ -16,8 +23,7 @@ contract PoolFactory is IPoolFactory {
     string calldata symbol
   ) override external {
     // Please note, the weights array is not used in the Pool creation
-    IPool pool = new Pool(name, symbol, msg.sender, stakeTokens);
-    
-    emit PoolCreated(address(pool), name, symbol, msg.sender);
+    IPool pool = new StakeGardenPool(name, symbol, address(controller), stakeTokens, weights);
+    emit PoolCreated(address(pool), name, symbol, address(controller), weights);
   }
 }

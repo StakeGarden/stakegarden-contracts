@@ -7,10 +7,32 @@
 const hre = require("hardhat");
 
 async function main() {
-  const pool = await hre.ethers.deployContract("Pool");
-  await pool.waitForDeployment();
-  let address = await pool.getAddress();
-  console.log(`Deployed at ${address}`);
+  const controller = await deployController();
+  const factory = await deployFactory(controller.address);
+
+  const setPoolTX = await controller.contract.setPoolFactory(factory.address);
+  await setPoolTX.wait();
+}
+
+async function deployController() {
+  const oneInchContract = "0x1111111254EEB25477B68fb85Ed929f73A960582";
+  
+  const controller = await hre.ethers.deployContract("StakeGardenController", [oneInchContract]);
+  await controller.waitForDeployment();
+  
+  const address = await controller.getAddress();
+  console.log(`Controller deployed at ${address}`);
+  return {address, contract: controller};
+}
+
+async function deployFactory(controllerAddress) {
+  const factory = await hre.ethers.deployContract("StakeGardenPoolFactory", [controllerAddress]);
+  await factory.waitForDeployment();
+
+  const address = await factory.getAddress();
+  console.log(`Factory deployed at ${address}`);
+
+  return {address, contract: factory};
 }
 
 // We recommend this pattern to be able to use async/await everywhere

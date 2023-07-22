@@ -1,17 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
+import {IPool} from "./interfaces/IPool.sol";
 import {IController} from "./interfaces/IController.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 error TokenNotSupported();
 
-contract StakeGardenPool is Ownable {
-  using SafeERC20 for ERC20;
+contract StakeGardenPool is Ownable, IPool {
+  using SafeERC20 for IERC20;
 
-  mapping(address => uint256) public weights;
+  uint256[] public weights;
 
   // address public USDC = 0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174;
   // address public WETH = 0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619;
@@ -24,12 +25,14 @@ contract StakeGardenPool is Ownable {
     string memory _name, 
     string memory _symbol, 
     address _controller, 
-    address[] memory _stakeTokens
+    address[] memory _stakeTokens,
+    uint256[] memory _weights
   ) onlyAllowedTokens(_controller, _stakeTokens) {
     // Set name and symbol
     name = _name;
     symbol = _symbol;
     controller = IController(_controller);
+    weights = _weights;
 
     // Approving max for simplicity
     uint256 tokenCount = _stakeTokens.length;
