@@ -20,7 +20,7 @@ contract StakeGardenPool is Ownable, IPool, ERC20 {
 
   event Deposit(uint256[] amounts);
   event Withdraw(uint256 amount);
-  event Rebalance();
+  event Rebalance(uint256[] weights);
 
   IController public immutable controller;
 
@@ -125,7 +125,16 @@ contract StakeGardenPool is Ownable, IPool, ERC20 {
     // Calculate new weights based on token balances
     weights[address(desc.srcToken)] = sellTokenBalance * totalWeight / (sellTokenBalance + buyTokenBalance);
     weights[address(desc.dstToken)] = totalWeight - weights[address(desc.srcToken)];
-    emit Rebalance();
+
+    uint256 count = stakeTokens.length;
+    uint256[] memory _weights = new uint256[](count);
+
+    for (uint256 i = 0; i < count; i++) {
+      _weights[i] = weights[stakeTokens[i]];
+    }
+    
+    _rebalance(_weights);
+    emit Rebalance(_weights);
   }
 
   function isStakeToken(address token) private view returns (bool) {
